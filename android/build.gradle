@@ -1,19 +1,12 @@
-buildscript {
-    ext.kotlin_version = '1.9.22'
-    repositories {
-        google()
-        mavenCentral()
-    }
-
-    dependencies {
-        classpath 'com.android.tools.build:gradle:8.2.1'
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-    }
-}
-
 plugins {
     id "com.android.library"
-    id "kotlin-android"
+}
+
+def agpMajorVersion = com.android.Version.ANDROID_GRADLE_PLUGIN_VERSION.tokenize('.')[0].toInteger()
+def builtInKotlinEnabled = agpMajorVersion >= 9 &&
+        (providers.gradleProperty('android.builtInKotlin').orNull?.toBoolean() ?: true)
+if (!builtInKotlinEnabled) {
+    apply plugin: 'kotlin-android'
 }
 
 group 'com.kasem.receive_sharing_intent'
@@ -27,6 +20,8 @@ rootProject.allprojects {
 }
 
 android {
+    compileSdk flutter.compileSdkVersion
+
     if (project.android.hasProperty("namespace")) {
         namespace 'com.kasem.receive_sharing_intent'
     }
@@ -36,17 +31,16 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
 
-    kotlinOptions {
-        jvmTarget = '17'
-    }
-
     sourceSets {
         main.java.srcDirs += 'src/main/kotlin'
     }
     defaultConfig {
-        compileSdk 34
         minSdkVersion 19
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
+    }
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
     lintOptions {
         disable 'InvalidPackage'
@@ -54,5 +48,7 @@ android {
 }
 
 kotlin {
-    jvmToolchain(17)
+    compilerOptions {
+        jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17
+    }
 }
